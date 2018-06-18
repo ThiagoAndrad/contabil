@@ -20,9 +20,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @RunWith(SpringRunner.class)
@@ -55,6 +53,20 @@ public class LancamentoContabilControllerTest {
     }
 
     @Test
+    public void deveLancarErroQuandoDadosForemInvalidos() throws Exception {
+        String json = new JSONObject()
+                .put("contaContabil", null)
+                .put("data", null)
+                .put("valor", null)
+                .toString();
+
+        mvc.perform(post("/lancamentos-contabeis/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void deveRetornarUmLancamento() throws Exception {
         LancamentoContabil lancamentoContabil = new LancamentoContabil(123456L, LocalDate.now(), new BigDecimal("100.00"));
         repository.save(lancamentoContabil);
@@ -65,5 +77,11 @@ public class LancamentoContabilControllerTest {
                 .andExpect(jsonPath("$.contaContabil", is(lancamentoContabil.getContaContabil().intValue())))
                 .andExpect(jsonPath("$.data", is(lancamentoContabil.getData().format(DateTimeFormatter.ofPattern("yyyyMMdd")))))
                 .andExpect(jsonPath("$.valor", is(lancamentoContabil.getValor().doubleValue())));
+    }
+
+    @Test
+    public void retorna404CasoNaoEncontreLancamento() throws Exception {
+        mvc.perform(get("/lancamentos-contabeis/blablabla"))
+                .andExpect(status().isNotFound());
     }
 }

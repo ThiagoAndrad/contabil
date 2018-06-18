@@ -84,4 +84,24 @@ public class LancamentoContabilControllerTest {
         mvc.perform(get("/lancamentos-contabeis/blablabla"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void retornaLancamentosConformeContaContabil() throws Exception {
+        long contaContabil = 123456L;
+        LancamentoContabil lancamentoContabil1 = new LancamentoContabil(contaContabil, LocalDate.now(), new BigDecimal("100.00"));
+        LancamentoContabil lancamentoContabil2 = new LancamentoContabil(contaContabil, LocalDate.now(), new BigDecimal("200.00"));
+        repository.save(lancamentoContabil1);
+        repository.save(lancamentoContabil2);
+
+        mvc.perform(get("/lancamentos-contabeis/?contaContabil=" + contaContabil))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", is(lancamentoContabil1.getId())))
+                .andExpect(jsonPath("$.[0].contaContabil", is(lancamentoContabil1.getContaContabil().intValue())))
+                .andExpect(jsonPath("$.[0].data", is(lancamentoContabil1.getData().format(DateTimeFormatter.ofPattern("yyyyMMdd")))))
+                .andExpect(jsonPath("$.[0].valor", is(lancamentoContabil1.getValor().doubleValue())))
+                .andExpect(jsonPath("$.[1].id", is(lancamentoContabil2.getId())))
+                .andExpect(jsonPath("$.[1].contaContabil", is(lancamentoContabil2.getContaContabil().intValue())))
+                .andExpect(jsonPath("$.[1].data", is(lancamentoContabil2.getData().format(DateTimeFormatter.ofPattern("yyyyMMdd")))))
+                .andExpect(jsonPath("$.[1].valor", is(lancamentoContabil2.getValor().doubleValue())));
+    }
 }

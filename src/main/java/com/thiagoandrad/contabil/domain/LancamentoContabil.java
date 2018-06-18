@@ -25,6 +25,18 @@ public class LancamentoContabil {
         return id;
     }
 
+    public Long getContaContabil() {
+        return contaContabil;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public BigDecimal getValor() {
+        return valor;
+    }
+
     /**
      * @deprecated hibernate eyes
      */

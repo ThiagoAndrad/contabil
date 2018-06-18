@@ -6,10 +6,7 @@ import com.thiagoandrad.contabil.view.LancamentoForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -37,6 +34,13 @@ public class LancamentoContabilController {
         repository.save(lancamentoContabil);
 
         return ResponseEntity.created(URI.create("/lancamentos-contabeis/" + lancamentoContabil.getId() )).build();
+    }
+
+    @GetMapping(value = "{id}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getLancamentoContabil(@PathVariable("id") String id) {
+        return repository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 }

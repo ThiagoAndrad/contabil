@@ -1,5 +1,7 @@
 package com.thiagoandrad.contabil.controller;
 
+import com.thiagoandrad.contabil.domain.LancamentoContabil;
+import com.thiagoandrad.contabil.repository.LancamentoContabilRepository;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,10 +13,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -25,6 +32,9 @@ public class LancamentoContabilControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private LancamentoContabilRepository repository;
 
     @Test
     public void deveSalvarUmNovoLancamentoContabil() throws Exception {
@@ -42,5 +52,18 @@ public class LancamentoContabilControllerTest {
                         .content(json))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", containsString("/lancamentos-contabeis/")));
+    }
+
+    @Test
+    public void deveRetornarUmLancamento() throws Exception {
+        LancamentoContabil lancamentoContabil = new LancamentoContabil(123456L, LocalDate.now(), new BigDecimal("100.00"));
+        repository.save(lancamentoContabil);
+
+        mvc.perform(get("/lancamentos-contabeis/" + lancamentoContabil.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(lancamentoContabil.getId())))
+                .andExpect(jsonPath("$.contaContabil", is(lancamentoContabil.getContaContabil().intValue())))
+                .andExpect(jsonPath("$.data", is(lancamentoContabil.getData().format(DateTimeFormatter.ofPattern("yyyyMMdd")))))
+                .andExpect(jsonPath("$.valor", is(lancamentoContabil.getValor().doubleValue())));
     }
 }
